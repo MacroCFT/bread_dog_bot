@@ -3,16 +3,29 @@ import traceback
 import time
 
 from sys import stderr
-from json import dumps
+from json import dumps, loads
 from flask import Flask, request
 
-tokens = ["test"]
+
 log = open(fr'./logs/log-{time.strftime("%Y-%m-%d_%H-%M-%S")}.txt', 'w')
 
 
 def write_log(l: str):
     log.write(f'''[{time.strftime("%x %X")}] {l}\n''')
     log.flush()
+
+
+write_log("开始导入配置文件...")
+try:
+    with open("config.json") as w:
+        cfg = loads(w.read())
+        host = cfg["host"]
+        port = cfg["port"]
+        tokens = cfg["token"]
+except Exception as e:
+    traceback.print_exc(file=log)
+    traceback.print_exc()
+    write_log(f"配置文件导入出错！{e}")
 
 
 class sql:
@@ -92,6 +105,7 @@ def blacklist():
     except Exception as e:
         traceback.print_exc(file=log)
         traceback.print_exc()
+        log.flush()
         stderr.write("看起来出错了呢...要不提交一下issue?")
         return dumps({"msg": e}), 403
 
@@ -108,6 +122,7 @@ def add_blacklist():
     except Exception as e:
         traceback.print_exc(file=log)
         traceback.print_exc()
+        log.flush()
         stderr.write("看起来出错了呢...要不提交一下issue?")
         return dumps({"msg": e}), 403
 
@@ -124,6 +139,7 @@ def del_blacklist():
     except Exception as e:
         traceback.print_exc(file=log)
         traceback.print_exc()
+        log.flush()
         stderr.write("看起来出错了呢...要不提交一下issue?")
         return dumps({"msg": e}), 403
 
