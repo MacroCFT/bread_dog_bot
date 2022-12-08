@@ -115,7 +115,7 @@ _✨基于 [Nonebot2](https://github.com/nonebot/nonebot2) 和 [go-cqhttp](https
 
 
 ## 支持
-强烈推荐使用 Terraria v1.4.4.5（最新版）
+强烈推荐使用 Terraria v1.4.4+ (TShock5+)
 
 
 ## 前置插件
@@ -164,6 +164,7 @@ _✨基于 [Nonebot2](https://github.com/nonebot/nonebot2) 和 [go-cqhttp](https
 + 问心 50.00 CNY
 
 </details>
+和原作者:`Qianyiovo`
 
 ## 贡献
 
