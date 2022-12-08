@@ -169,9 +169,6 @@ _✨基于 [Nonebot2](https://github.com/nonebot/nonebot2) 和 [go-cqhttp](https
 
 如果你喜欢本项目，可以请[原作者喝杯可乐](https://afdian.net/@qianyiovo)，我会继续努力的！
 
-## 补充
-此fork现在由`StarCloud-cy`更新，欢迎前往[原作](https://github.com/Qianyiovo/bread_dog_bot)
-
 
 ## 许可
 
