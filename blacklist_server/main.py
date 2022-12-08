@@ -55,6 +55,7 @@ class sql:
         if token in tokens:
             s, r = self.execute_sql(f"select * from black_list")
             if s:
+                write_log(f"用户信息 {r} 请求成功...")
                 return True, r
             else:
                 return False, r
@@ -62,12 +63,31 @@ class sql:
             write_log(f"token:'{token}'不在可用的tokens列表内")
             return False, "token不正确"
 
+    def find(self, qq):
+        write_log(f"请求云黑用户的信息...qq={qq}")
+        s, r = self.execute_sql(f"select * from black_list where qq = '{qq}'")
+        if s:
+            return True, r
+        else:
+            return False, r
+
     def add(self, token, qq, group, reason):
         write_log(f"添加云黑...token={token}, qq={qq}, group={group}, reason={reason}")
         if token in tokens:
-            s, r = self.execute_sql(f"INSERT INTO black_list VALUES('{qq}','{group}','{reason}')")
+            s, r = self.find(qq)
             if s:
-                return True, "数据加入成功"
+                if not r:
+                    print("没有匹配的用户")
+                    write_log(f"未匹配用户{qq}，添加云黑...")
+                    s, r = self.execute_sql(f"INSERT INTO black_list VALUES('{qq}','{group}','{reason}')")
+                    if s:
+                        write_log(f"云黑用户 qq={qq}, group={group}, reason={reason} 已被添加...")
+                        return True, "数据加入成功"
+                    else:
+                        return False, r
+                else:
+                    print(r)
+                    return False, f"该用户已存在于云黑数据库！\nQQ:{r[0][0]}\n加入的群:{r[0][1]}\n理由:{r[0][2]}"
             else:
                 return False, r
         else:
@@ -77,10 +97,19 @@ class sql:
     def delete(self, token, qq):
         write_log(f"删除云黑...token={token}, qq={qq}")
         if token in tokens:
-            print(qq)
-            s, r = self.execute_sql(f"delete from black_list where qq = '{qq}'")
+            print(f"接收到删除云黑请求：QQ:{qq}")
+            s, r = self.find(qq)
             if s:
-                return True, "数据删除成功"
+                if r:
+                    print(f"发现云黑用户:{r}")
+                    s, r = self.execute_sql(f"delete from black_list where qq = '{qq}'")
+                    if s:
+                        write_log(f"云黑用户{qq}已从云黑中移除")
+                        return True, "数据删除成功"
+                    else:
+                        return False, r
+                else:
+                    return False, f"云黑数据中没有{qq}！"
             else:
                 return False, r
         else:
@@ -95,9 +124,12 @@ bl = Flask(__name__)
 @bl.route("/blacklist/", methods=["GET"])
 def blacklist():
     try:
+        write_log(f"接收到GET请求:{request.host_url}")
+        write_log(f"请求者IP为:{request.remote_addr}")
+        write_log(f"请求获取云黑列表...")
+        print("接收到云黑数据请求...")
         s, r = bl_sql.detect(request.args.get("token"))
         if s:
-            print(f"Debug: 获取的数据:{r}")
             write_log(f"获取的云黑用户元数据:{r}")
             return dumps({"data": r}), 200
         else:
@@ -113,6 +145,9 @@ def blacklist():
 @bl.route("/blacklist/add/", methods=["GET"])
 def add_blacklist():
     try:
+        write_log(f"接收到GET请求:{request.host_url}")
+        write_log(f"请求者IP为:{request.remote_addr}")
+        write_log(f'请求添加云黑请求：QQ:{request.args.get("QQ")}, 群组:{request.args.get("groupID")}，理由:{request.args.get("reason")}')
         print("接受到添加云黑请求：QQ:{0}, 群组:{1}，理由:{2}".format(request.args.get("QQ"), request.args.get("groupID"), request.args.get("reason")))
         s, r = bl_sql.add(request.args.get("token"), request.args.get("QQ"), request.args.get("groupID"), request.args.get("reason"))
         if s:
@@ -130,6 +165,9 @@ def add_blacklist():
 @bl.route("/blacklist/delete/", methods=["GET"])
 def del_blacklist():
     try:
+        write_log(f"接收到GET请求:{request.host_url}")
+        write_log(f"请求者IP为:{request.remote_addr}")
+        write_log(f"请求删除云黑:{request.args.get('QQ')}")
         print("接受到删除云黑请求：QQ:{0}".format(request.args.get("QQ")))
         s, r = bl_sql.delete(request.args.get("token"), request.args.get("QQ"))
         if s:
@@ -147,6 +185,6 @@ def del_blacklist():
 if __name__ == "__main__":
     print("启动项目...")
     write_log("云黑服务器启动...")
-    bl.run(host="0.0.0.0", port=5432)
+    bl.run(host=host, port=port)
 else:
     raise ImportError("此文件不可被引入")
