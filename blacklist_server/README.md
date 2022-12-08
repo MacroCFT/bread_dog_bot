@@ -16,6 +16,7 @@
 
 使用方法:
 运行main.py即可(你可能需要配置Python3并安装Flask `pip install Flask`)
+`Windows`下可直接运行已打包的文件 `main.exe`
 
 接下来改写Bread Dog的`config.py`，找到`CloudBlacklist`类，并把`url`变量改为`http://你服的IP:5432`，保存并开启Bread Dog Bot即可
 
