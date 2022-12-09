@@ -1,17 +1,16 @@
-import sqlite3
-import traceback
-import time
-
-from sys import stderr
+from sqlite3 import connect, OperationalError
 from json import dumps, loads
+from sys import stderr
+from time import strftime
+from traceback import print_exc
+
 from flask import Flask, request
 
-
-log = open(fr'./logs/log-{time.strftime("%Y-%m-%d_%H-%M-%S")}.txt', 'w')
+log = open(fr'./logs/log-{strftime("%Y-%m-%d_%H-%M-%S")}.txt', 'w')
 
 
 def write_log(l: str):
-    log.write(f'''[{time.strftime("%x %X")}] {l}\n''')
+    log.write(f'''[{strftime("%x %X")}] {l}\n''')
     log.flush()
 
 
@@ -23,8 +22,8 @@ try:
         port = cfg["port"]
         tokens = cfg["token"]
 except Exception as e:
-    traceback.print_exc(file=log)
-    traceback.print_exc()
+    print_exc(file=log)
+    print_exc()
     write_log(f"配置文件导入出错！{e}")
 
 
@@ -36,7 +35,7 @@ class sql:
 
     def execute_sql(self, s: str):
         try:
-            self.conn = sqlite3.connect(self.path)
+            self.conn = connect(self.path)
             self.cur = self.conn.cursor()
             self.cur.execute(s)
             sql_return_result = self.cur.fetchall()
@@ -45,8 +44,8 @@ class sql:
             self.conn.close()
             write_log(f"数据库处理结果:{sql_return_result}")
             return True, sql_return_result
-        except sqlite3.OperationalError as e:
-            traceback.print_exc()
+        except OperationalError as e:
+            print_exc()
             write_log(f"数据库处理出错:{e}")
             return False, f"数据库处理时出错:{e}"
 
@@ -135,8 +134,8 @@ def blacklist():
         else:
             return dumps({"msg": r}), 403
     except Exception as e:
-        traceback.print_exc(file=log)
-        traceback.print_exc()
+        print_exc(file=log)
+        print_exc()
         log.flush()
         stderr.write("看起来出错了呢...要不提交一下issue?")
         return dumps({"msg": e}), 403
@@ -147,16 +146,19 @@ def add_blacklist():
     try:
         write_log(f"接收到GET请求:{request.host_url}")
         write_log(f"请求者IP为:{request.remote_addr}")
-        write_log(f'请求添加云黑请求：QQ:{request.args.get("QQ")}, 群组:{request.args.get("groupID")}，理由:{request.args.get("reason")}')
-        print("接受到添加云黑请求：QQ:{0}, 群组:{1}，理由:{2}".format(request.args.get("QQ"), request.args.get("groupID"), request.args.get("reason")))
-        s, r = bl_sql.add(request.args.get("token"), request.args.get("QQ"), request.args.get("groupID"), request.args.get("reason"))
+        write_log(
+            f'请求添加云黑请求：QQ:{request.args.get("QQ")}, 群组:{request.args.get("groupID")}，理由:{request.args.get("reason")}')
+        print("接受到添加云黑请求：QQ:{0}, 群组:{1}，理由:{2}".format(request.args.get("QQ"), request.args.get("groupID"),
+                                                                    request.args.get("reason")))
+        s, r = bl_sql.add(request.args.get("token"), request.args.get("QQ"), request.args.get("groupID"),
+                          request.args.get("reason"))
         if s:
             return dumps({"data": r}), 200
         else:
             return dumps({"msg": r}), 403
     except Exception as e:
-        traceback.print_exc(file=log)
-        traceback.print_exc()
+        print_exc(file=log)
+        print_exc()
         log.flush()
         stderr.write("看起来出错了呢...要不提交一下issue?")
         return dumps({"msg": e}), 403
@@ -175,8 +177,8 @@ def del_blacklist():
         else:
             return dumps({"msg": r}), 403
     except Exception as e:
-        traceback.print_exc(file=log)
-        traceback.print_exc()
+        print_exc(file=log)
+        print_exc()
         log.flush()
         stderr.write("看起来出错了呢...要不提交一下issue?")
         return dumps({"msg": e}), 403

@@ -53,6 +53,16 @@ async def help_handle(bot: Bot, event: Event):
                               "添加白名单 [昵称]\n"
                               "参数：\n"
                               "昵称 - 玩家游戏昵称")
+        elif command == "绑定白名单":
+            await help.finish("—绑定白名单——\n"
+                              "权限：\n"
+                              "无\n"
+                              "介绍：\n"
+                              "直接在数据库中添加白名单而不在服务器中添加白名单\n"
+                              "用法：\n"
+                              "绑定白名单 [昵称]\n"
+                              "参数：\n"
+                              "昵称 - 玩家游戏昵称")
         elif command == "删除白名单":
             await help.finish("——删除白名单——\n"
                               "权限：\n"
@@ -63,6 +73,25 @@ async def help_handle(bot: Bot, event: Event):
                               "删除白名单 [QQ]\n"
                               "参数：\n"
                               "QQ - 玩家绑定的QQ")
+        elif command == "自删白名单":
+            await help.finish("——自删白名单——\n"
+                              "权限：\n"
+                              "无\n"
+                              "介绍：\n"
+                              "向所有服务器以及数据库删除自己的白名单\n"
+                              "用法：\n"
+                              "自删白名单\n"
+                              "参数：无\n")
+        elif command == "改绑白名单":
+            await help.finish("——改绑白名单——\n"
+                              "权限：\n"
+                              "无\n"
+                              "介绍：\n"
+                              "改绑白数据库中的白名单，你可能需要使用 添加白名单 重新添加白名单\n"
+                              "用法：\n"
+                              "删除白名单 [玩家名]\n"
+                              "参数：\n"
+                              "玩家名 - 新的名字")
         elif command == "添加管理员":
             await help.finish("——添加管理——\n"
                               "权限：\n"
