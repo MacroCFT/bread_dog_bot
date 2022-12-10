@@ -23,6 +23,12 @@ async def add_whitelist_handle(bot: Bot, event: Event):
             msg = []
             if result:
                 if server_info_list:
+                    result, player_info = utils.whitelist.GetInfo.by_qq(event.get_user_id())
+                    if result:
+                        if player_info[3] == player_name:
+                            msg.append("警告：你正在重新添加白名单")
+                        else:
+                            msg.append("警告：你正在以不同于数据库中绑定的玩家名添加白名单，将使用数据库的玩家名添加白名单，如需更改，请使用「改绑白名单」")
                     for i in server_info_list:
                         conn = models.server.Connect(i[2], i[3], i[4])
                         result, reason = conn.add_whitelist(event.get_user_id(), player_name)

@@ -122,7 +122,6 @@ def rebind_db(qq: str, name: str):
         return False, sql_return_result
 
 
-
 def delete_from_server(ip: str, port: str, token: str, name: str):
     """
     从服务器中删除白名单 需要Better Whitelist插件
@@ -135,10 +134,13 @@ def delete_from_server(ip: str, port: str, token: str, name: str):
     command = f"/bwl del {name}"
     result, command_output = utils.RESTAPI.V3.Server.rawcmd(ip, port, token, command)
     if result:
-        if command_output["response"][0] == "删除成功!":
-            return True, None
-        else:
-            return False, command_output["response"][0]
+        try:
+            if command_output["response"][0] == "删除成功!":
+                return True, None
+            else:
+                return False, command_output["response"][0]
+        except IndexError:
+            return False, "REST返回数据错误,可能是玩家名不对呢"
     else:
         return False, command_output
 
