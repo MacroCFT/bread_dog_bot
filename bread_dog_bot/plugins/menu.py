@@ -73,6 +73,9 @@ async def bind_handle(bot: Bot, event: Event):
             "———绑定功能———\n"
             f"{MessageSegment.face(147)}添加白名单\n"
             f"{MessageSegment.face(147)}删除白名单\n"
+            f"{MessageSegment.face(147)}绑定白名单\n"
+            f"{MessageSegment.face(147)}自删白名单\n"
+            f"{MessageSegment.face(147)}改绑白名单\n"
             f"{MessageSegment.face(147)}重置白名单列表\n"
             f"当前页数：1/1\n"
         ))
