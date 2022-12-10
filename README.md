@@ -119,6 +119,7 @@ _✨基于 [Nonebot2](https://github.com/nonebot/nonebot2) 和 [go-cqhttp](https
 
 ## 支持
 强烈推荐使用 Terraria v1.4.4+ (TShock5+)
+
 云黑服务器可使用~~星云写的云黑服务器或~~[千亦的云黑服务器](https://github.com/Qianyiovo/bread_dog_blacklist_system)
 
 
