@@ -92,11 +92,35 @@ def add_to_db(qq: str, name: str):
     :param name: 玩家昵称
     :return: 添加结果 成功返回[True, None] 失败返回[False, 失败原因]
     """
-    result, sql_return_result = utils.server.execute_sql("insert into whitelist(QQ, Name) values ('%s', '%s')" % (qq, name))
+    result, sql_return_result = utils.server.execute_sql(
+        "insert into whitelist(QQ, Name) values ('%s', '%s')" % (qq, name))
     if result:
         return True, None
     else:
         return False, sql_return_result
+
+
+def rebind_db(qq: str, name: str):
+    """
+    改绑白名单数据
+    :param qq: 玩家QQ
+    :param name: 玩家昵称
+    :return: 添加结果 成功返回[True, None] 失败返回[False, 失败原因]
+    """
+    result, sql_return_result = utils.server.execute_sql("select * from whitelist where QQ = '%s'" % qq)
+    if result:
+        if not sql_return_result:
+            return False, "不存在此玩家"
+        else:
+            result, sql_return_result = utils.server.execute_sql(
+                "Update whitelist set Name='%s' where qq='%s'" % (name, qq))
+            if result:
+                return True, None
+            else:
+                return False, sql_return_result
+    else:
+        return False, sql_return_result
+
 
 
 def delete_from_server(ip: str, port: str, token: str, name: str):
