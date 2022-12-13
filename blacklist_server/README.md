@@ -31,7 +31,8 @@
 运行main.py即可(你可能需要配置Python3并安装Flask `pip install Flask`)
 `Windows`下可直接运行已打包的文件 `main.exe`
 
-接下来改写Bread Dog的`config.py`，找到`CloudBlacklist`类，并把`url`变量改为`http://你服的IP:你配置的端口`，保存并开启Bread Dog Bot即可
+接下来改写Bread Dog的`config.py`，找到`CloudBlacklist`类，并把`url`变量改为`http://你服的IP:你配置的端口`，把`token`变量改为你配置的密钥之一，保存并开启Bread Dog Bot即可
+![image](https://user-images.githubusercontent.com/115162925/207231293-7c01ce47-6657-4962-99b4-bc777d72e47a.png)
 
 如果报错，请把它连同它生成的日志反馈给我
 
