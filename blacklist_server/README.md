@@ -45,5 +45,3 @@
 + /blacklist/add/?token=密钥,需要有add权限&QQ=QQ号&groupID=添加云黑的群号
 + /blacklist/delete/?token=密钥,需要有del权限&QQ=QQ号
 </details>
-
-<details>
