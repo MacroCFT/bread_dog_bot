@@ -25,10 +25,7 @@ async def add_whitelist_handle(bot: Bot, event: Event):
                 if server_info_list:
                     result, player_info = utils.whitelist.GetInfo.by_qq(event.get_user_id())
                     if result:
-                        if player_info[3] == player_name:
-                            msg.append("警告：你正在重新添加白名单")
-                        else:
-                            msg.append("警告：你正在以不同于数据库中绑定的玩家名添加白名单，将使用数据库的玩家名添加白名单，如需更改，请使用「改绑白名单」")
+                        msg.append("警告：你正在重新添加白名单，将使用数据库的玩家名添加白名单，如需更改，请使用「改绑白名单」")
                     for i in server_info_list:
                         conn = models.server.Connect(i[2], i[3], i[4])
                         result, reason = conn.add_whitelist(event.get_user_id(), player_name)
@@ -209,6 +206,52 @@ async def self_delete_handle(bot: Bot, event: Event):
     else:
         await self_delete.finish(Message("删除失败！\n未知的模式\n请在config.py中重新配置"))
 
+
+query_server = on_command("查询服白名单")
+
+
+@query_server.handle()
+async def query_server_handle(bot: Bot, event: Event):
+    logger.info(f"「{event.get_user_id()}」执行了 「查询服白名单」")
+    admins = utils.admin.get()
+    try:
+        text = event.get_plaintext().split(" ")
+        id = text[1]
+        if not id.isdigit():
+            await query_server.finish("执行失败！\n无效的参数\n服务器序号必须为数字")
+        result, server_info = utils.server.GetInfo.by_id(int(id))
+        if result:
+            conn = models.server.Connect(server_info[2], server_info[3], server_info[4])
+            result, execute_result = conn.remote_command("/bwl list")
+            if result:
+                if not execute_result["response"]:
+                    execute_result["response"] = ["似乎没有返回结果"]
+                await query_server.finish(f"查询成功！\n白名单列表：\n" + "\n".join(execute_result["response"]))
+                logger.info(f"「{event.get_user_id()}」查询了 {id} 号服务器的白名单")
+            else:
+                await query_server.finish(f"执行失败！\n{execute_result}")
+        else:
+            await query_server.finish(f"执行失败！\n找不到序号为{id}的服务器")
+    except ValueError:
+        await query_server.finish("执行失败！\n用法错误！\n请输入【帮助 查询服白名单】获取该功能更多信息")
+
+
+query_sql = on_command("查询白名单")
+
+
+@query_sql.handle()
+async def query_sql_handle(bot: Bot, event: Event):
+    logger.info(f"「{event.get_user_id()}」执行了 「查询白名单」")
+    admins = utils.admin.get()
+    try:
+        result, server_info = utils.whitelist.GetInfo.all()
+        if result:
+            w = ["数据库中的白名单："]
+            for s in server_info:
+                w.append(f"{s[1]} -> {s[2]}")
+            await query_sql.finish("\n".join(w))
+    except ValueError:
+        await query_sql.finish("执行失败！\n用法错误！\n请输入【帮助 查询白名单】获取该功能更多信息")
 
 reset = on_command("重置白名单", permission=SUPERUSER)
 

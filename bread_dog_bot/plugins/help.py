@@ -92,6 +92,25 @@ async def help_handle(bot: Bot, event: Event):
                               "删除白名单 [玩家名]\n"
                               "参数：\n"
                               "玩家名 - 新的名字")
+        elif command == "查询服白名单":
+            await help.finish("——查询服白名单——\n"
+                              "权限：\n"
+                              "无\n"
+                              "介绍：\n"
+                              "查询指定服务器中的白名单\n"
+                              "用法：\n"
+                              "查询服白名单 [服务器]\n"
+                              "参数：\n"
+                              "服务器 - 服务器ID")
+        elif command == "查询白名单":
+            await help.finish("——查询白名单——\n"
+                              "权限：\n"
+                              "无\n"
+                              "介绍：\n"
+                              "查询数据库中绑定的白名单\n"
+                              "用法：\n"
+                              "查询白名单\n"
+                              "参数：无")
         elif command == "添加管理员":
             await help.finish("——添加管理——\n"
                               "权限：\n"
