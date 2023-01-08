@@ -46,7 +46,6 @@ _✨基于 [Nonebot2](https://github.com/nonebot/nonebot2) 和 [go-cqhttp](https
 
 + 添加白名单
 + 删除白名单
-+ 绑定白名单
 + 改绑白名单
 + 自删白名单
 + 查询白名单
@@ -119,7 +118,33 @@ _✨基于 [Nonebot2](https://github.com/nonebot/nonebot2) 和 [go-cqhttp](https
 </details>
 
 
-## 支持
+## 使用方式简览
+1.安装一个适合你电脑的[Python](https://www.python.org)，建议使用3.10
+
+必要时可以创建一个虚拟环境
+
+2.克隆本仓库
+
+```shell
+git clone https://github.com/StarCloud-CY/bread_dog_bot.git
+```
+
+3.安装对应的模块
+
+```shell
+pip install -r requirements.txt
+```
+
+你可能需要换源并安装`Visual Build Tools`
+
+4.运行项目
+
+```shell
+nb run
+```
+
+
+## 版本要求
 强烈推荐使用 Terraria v1.4.4+ (TShock5+)
 
 云黑服务器可使用~~星云写的云黑服务器或~~[千亦的云黑服务器](https://github.com/Qianyiovo/bread_dog_blacklist_system)
@@ -171,7 +196,7 @@ _✨基于 [Nonebot2](https://github.com/nonebot/nonebot2) 和 [go-cqhttp](https
 + 问心 50.00 CNY
 
 </details>
-和原作者:`Qianyiovo`
+还有原作者: `Qianyiovo`
 
 ## 贡献
 
