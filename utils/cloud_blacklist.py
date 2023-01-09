@@ -1,126 +1,117 @@
-from typing import Union
+from nonebot import on_command, logger
+from nonebot.adapters.onebot.v11 import Bot, GroupMessageEvent
 
-import config
-import requests
+import utils.admin
+import utils.cloud_blacklist
+
+cloud_blacklist_detection = on_command("云黑检测")
 
 
-def detect(qq: Union[str, int, list]):
-    """
-    检测QQ是否在云黑名单中
-    :param qq: QQ number.
-    :return: 检测成功返回[True, 在云黑中的QQ] 否则返回[False, 失败原因]
-    """
-    if isinstance(qq, str):
-        qq = [qq]
-    if isinstance(qq, int):
-        qq = [str(qq)]
-    if not isinstance(qq, list):
-        return [False, "参数错误"]
-    if len(qq) == 0:
-        return [False, "参数错误"]
-    for i in qq:
-        if not isinstance(i, str):
-            return [False, "参数错误"]
-    url = config.CloudBlacklist.url + "/blacklist/"
-    token = config.CloudBlacklist.token
-    params = {
-        "token": token,
-        "qq": qq
-    }
-    r = requests.get(url, params=params)
-    blacklist = []
-    if r.status_code == 200:
-        for i in r.json()["data"]:
-            for j in qq:
-                if i[0] == j:
-                    blacklist.append(j)
-        return [True, blacklist]
+@cloud_blacklist_detection.handle()
+async def cloud_blacklist_detection_handle(bot: Bot, event: GroupMessageEvent):
+    if event.get_plaintext() == "云黑检测":
+        logger.info(f"「{event.get_user_id()}」执行了 「云黑检测」")
+        admins = utils.admin.get()
+        if event.get_user_id() in admins:
+            member_list = await bot.get_group_member_list(group_id=event.group_id)
+            member_qq = []
+            for i in member_list:
+                member_qq.append(str(i["user_id"]))
+            result, blacklist = utils.cloud_blacklist.detect(member_qq)
+            if result:
+                if not blacklist:
+                    await cloud_blacklist_detection.finish(f"检测成功！\n群内暂时无云黑用户\n继续保持哦")
+                else:
+                    await cloud_blacklist_detection.finish(f"检测成功！\n以下是群内云黑用户：\n" + "\n".join(blacklist))
+            else:
+                if blacklist == "权限验证失败":
+                    blacklist = "Token错误，请检查config.py文件中的token是否正确"
+                await cloud_blacklist_detection.finish(f"检测失败！\n{blacklist}")
+        else:
+            await cloud_blacklist_detection.finish(f"检测失败！\n权限不足！\n请输入【帮助 云黑检测】获取该功能更多信息")
 
-    elif r.status_code == 403:
-        return [False, r.json()["msg"]]
-    elif r.status_code == 429:
-        return [False, "请求过于频繁，请稍等五秒后再试"]
+
+add_cloud_blacklist = on_command("添加云黑")
+
+
+@add_cloud_blacklist.handle()
+async def add_blacklist_handle(bot: Bot, event: GroupMessageEvent):
+    logger.info(f"「{event.get_user_id()}」执行了 「添加云黑」")
+    admins = utils.admin.get()
+    if event.get_user_id() in admins:
+        text = event.get_plaintext().split(" ")
+        if len(text) == 3:
+            qq = text[1]
+            reason = text[2]
+            group_id = event.group_id
+
+            if not qq.isdigit():
+                await add_cloud_blacklist.finish(f"添加失败！\n无效的参数\n请输入正确的QQ号")
+
+            result, reason = utils.cloud_blacklist.add(qq=qq, reason=reason, group_id=str(group_id))
+            if result:
+                logger.info(f"「{event.get_user_id()}」添加了云黑 QQ={qq} group_id={str(group_id)} reason={result}")
+                await add_cloud_blacklist.finish(f"添加成功！")
+            else:
+                if reason == "权限验证失败":
+                    reason = "Token错误，请检查config.py文件中的token是否正确"
+                await add_cloud_blacklist.finish(f"添加失败！\n{reason}")
+        else:
+            await add_cloud_blacklist.finish(f"添加失败！\n用法错误！\n请输入【帮助 添加云黑】获取该功能更多信息")
     else:
-        return [False, "无法连接至服务器"]
+        await add_cloud_blacklist.finish(f"添加失败！\n权限不足！\n请输入【帮助 添加云黑】获取该功能更多信息")
 
 
-def add(qq: str, group_id: str, reason: str):
-    """
-    将QQ加入云黑名单
-    :param qq: QQ number.
-    :return: 成功返回[True, "成功加入云黑"] 否则返回[False, 失败原因]
-    :param group_id: QQ群号
-    :param reason: 原因
-    """
-    if not isinstance(qq, str):
-        return [False, "参数错误"]
-    url = config.CloudBlacklist.url + "/blacklist/add/"
-    token = config.CloudBlacklist.token
-    params = {
-        "token": token,
-        "QQ": qq,
-        "groupID": group_id,
-        "reason": reason
-    }
-    r = requests.get(url, params=params)
-    if r.status_code == 200:
-        return [True, "成功加入云黑"]
-    elif r.status_code == 403:
-        return [False, r.json()["msg"]]
-    elif r.status_code == 429:
-        return [False, "请求过于频繁，请稍等五秒后再试"]
+del_cloud_blacklist = on_command("删除云黑")
+
+
+@del_cloud_blacklist.handle()
+async def del_cloud_blacklist_handle(bot: Bot, event: GroupMessageEvent):
+    logger.info(f"「{event.get_user_id()}」执行了 「删除云黑」")
+    admins = utils.admin.get()
+    if event.get_user_id() in admins:
+        text = event.get_plaintext().split(" ")
+        if len(text) == 2:
+            qq = text[1]
+
+            if not qq.isdigit():
+                await del_cloud_blacklist.finish(f"添加失败！\n无效的参数\n请输入正确的QQ号")
+
+            result, reason = utils.cloud_blacklist.delete(qq=qq)
+            if result:
+                await del_cloud_blacklist.finish(f"删除成功！")
+                logger.info(f"「{event.get_user_id()}」删除了QQ为「{qq}」的云黑")
+            else:
+                if reason == "权限验证失败":
+                    reason = "Token错误，请检查config.py文件中的token是否正确"
+                await del_cloud_blacklist.finish(f"删除失败！\n{reason}")
+        else:
+            await del_cloud_blacklist.finish(f"删除失败！\n用法错误！\n请输入【帮助 删除云黑】获取该功能更多信息")
     else:
-        return [False, "无法连接至服务器"]
+        await del_cloud_blacklist.finish(f"删除失败！\n权限不足！\n请输入【帮助 删除云黑】获取该功能更多信息")
 
 
-def delete(qq: str):
-    """
-    将QQ从云黑名单中移除
-    :param qq: QQ number.
-    :return: 成功返回[True, "成功移除云黑"] 否则返回[False, 失败原因]
-    """
-    if not isinstance(qq, str):
-        return [False, "参数错误"]
-    url = config.CloudBlacklist.url + "/blacklist/delete/"
-    token = config.CloudBlacklist.token
-    params = {
-        "token": token,
-        "QQ": qq
-    }
-    r = requests.get(url, params=params)
-    if r.status_code == 200:
-        return [True, "成功移除云黑"]
-    elif r.status_code == 403:
-        return [False, r.json()["msg"]]
-    elif r.status_code == 429:
-        return [False, "请求过于频繁，请稍等五秒后再试"]
+query_cloud_blacklist = on_command("云黑信息")
+
+
+@query_cloud_blacklist.handle()
+async def query_cloud_blacklist_handle(bot: Bot, event: GroupMessageEvent):
+    logger.info(f"「{event.get_user_id()}」执行了 「云黑信息」")
+    admins = utils.admin.get()
+    if event.get_user_id() in admins:
+        text = event.get_plaintext().split(" ")
+        if len(text) == 2:
+            qq = text[1]
+
+            if not qq.isdigit():
+                await query_cloud_blacklist.finish(f"添加失败！\n无效的参数\n请输入正确的QQ号")
+
+            result, reason = utils.cloud_blacklist.query(qq=qq)
+            if result:
+                await query_cloud_blacklist.finish(f"查询成功！\nQQ：{reason[0]}\n添加群号：{reason[1]}\n原因：{reason[2]}")
+            else:
+                await query_cloud_blacklist.finish(f"查询失败！\n{reason}")
+        else:
+            await query_cloud_blacklist.finish(f"查询失败！\n用法错误！\n请输入【帮助 云黑信息】获取该功能更多信息")
     else:
-        return [False, "无法连接至服务器"]
-
-
-def query(qq: str):
-    """
-    查询QQ是否在云黑名单中
-    :param qq: QQ number.
-    :return: 检测成功返回[True, 在云黑中的QQ] 否则返回[False, 失败原因]
-    """
-    if not isinstance(qq, str):
-        return [False, "参数错误"]
-    url = config.CloudBlacklist.url + "/blacklist/"
-    token = config.CloudBlacklist.token
-    params = {
-        "token": token,
-    }
-    r = requests.get(url, params=params)
-    if r.status_code == 200:
-        for i in r.json()["data"]:
-            if i[0] == qq:
-                return [True, i]
-        return [False, "未找到该QQ"]
-    elif r.status_code == 403:
-        return [False, r.json()["msg"]]
-    elif r.status_code == 429:
-        return [False, "请求过于频繁，请稍等五秒后再试"]
-    else:
-        return [False, "无法连接至服务器"]
-
+        await query_cloud_blacklist.finish(f"查询失败！\n权限不足！\n请输入【帮助 云黑信息】获取该功能更多信息")
