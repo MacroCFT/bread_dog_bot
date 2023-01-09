@@ -39,7 +39,7 @@ async def add_whitelist_handle(bot: Bot, event: Event):
                                        f"{reason}")
                             failed_server += 1
                     error_msg = "\n".join(msg)
-                    await add_whitelist.finish(Message(f"添加白名单\n共{max_servers}个服务器，成功{success_server}个，失败{failed_server}个\n{error_msg}"))
+                    await add_whitelist.finish(Message(f"--添加白名单--\n共{max_servers}个服务器，成功{success_server}个，失败{failed_server}个" + (f"{error_msg}" if error_msg else "")))
                 else:
                     await add_whitelist.finish(Message("添加失败！\n没有添加服务器！"))
             else:
@@ -75,57 +75,60 @@ async def rebind_whitelist_handle(bot: Bot, event: Event):
         if len(text) == 3:
             player_name = text[2]
             qq = text[1]
-            result, reason = utils.GetInfo.by_qq(qq)
+            result, reason = utils.whitelist.GetInfo.by_qq(qq)
             if result:
                 if not player_name.isalnum():
                     await rebind_whitelist.finish("改绑失败！\n不合法的名称\n名称只能包含中文字母数字")
-                    #
-                    if config.Whitelist.method == "normal":  # 普通模式
-                        result, server_info_list = utils.server.GetInfo.all()
-                        msg = []
-                        if result:
-                            if server_info_list:
-                                max_servers = len(server_info_list)
-                                success_server = 0
-                                failed_server = 0
-                                for i in server_info_list:
-                                    conn = models.server.Connect(i[2], i[3], i[4])
-                                    result, reason = conn.delete_whitelist(event.get_user_id(), player_name)
-                                    if result:
-                                        success_server += 1
-                                    else:
-                                        msg.append(f"๑{i[0]}๑{MessageSegment.face(190)}{i[1]}\n"
-                                                   f"{reason}")
-                                        failed_server += 1
-                                error_msg = "\n".join(msg)
-                                msg = f"删除白名单\n共{max_servers}个服务器，成功{success_server}个，失败{failed_server}个\n{error_msg}"
-                            else:
-                                await rebind_whitelist.finish(Message("删除失败！\n没有可用的服务器！"))
-                        else:
-                            await rebind_whitelist.finish(Message("删除失败！\n无法连接至数据库"))
-                    elif config.Whitelist.method == "cluster":  # 集群模式
-                        main_server_id = config.Whitelist.main_server
-                        result, server_info = utils.server.GetInfo.by_id(main_server_id)
-                        if result:
-                            conn = models.server.Connect(server_info[2], server_info[3], server_info[4])
-                            result, reason = conn.delete_whitelist(qq)
-                            if result:
-                                msg = "删除成功！"
-                            else:
-                                await rebind_whitelist.finish("删除失败！\n" + reason)
-                        else:
-                            await rebind_whitelist.finish(Message("删除失败！\n无法连接至数据库"))
-                    else:
-                        await rebind_whitelist.finish(Message("删除失败！\n未知的模式\n请在config.py中重新配置"))
                 #
-                result, reason = utils.whitelist.rebind_db(qq, player_name)
-                if result:
-                    await rebind_whitelist.finish(f"{msg}\n改绑成功")
-                else:
-                    if reason == "不存在此玩家":
-                        await rebind_whitelist.finish(f"改绑失败！\n你还没有添加白名单")
+                msg = ""
+                success_server = 0
+                if config.Whitelist.method == "normal":  # 普通模式
+                    result, server_info_list = utils.server.GetInfo.all()
+                    error_msg = []
+                    if result:
+                        if server_info_list:
+                            max_servers = len(server_info_list)
+                            failed_server = 0
+                            for i in server_info_list:
+                                result, reason = utils.whitelist.delete_from_server(i[2], i[3], i[4], reason[2])
+                                if result:
+                                    success_server += 1
+                                else:
+                                    msg.append(f"๑{i[0]}๑{MessageSegment.face(190)}{i[1]}\n"
+                                               f"{reason}")
+                                    failed_server += 1
+                            error_msg = "\n".join(error_msg)
+                            msg = f"共{max_servers}个服务器，成功{success_server}个，失败{failed_server}个" + (f"{error_msg}" if error_msg else "")
+                        else:
+                            await rebind_whitelist.finish(Message("删除失败！\n没有可用的服务器！"))
                     else:
-                        await rebind_whitelist.finish(f"改绑失败！\n无法连接到数据库\n{reason}")
+                        await rebind_whitelist.finish(Message("删除失败！\n无法连接至数据库"))
+                elif config.Whitelist.method == "cluster":  # 集群模式
+                    main_server_id = config.Whitelist.main_server
+                    result, server_info = utils.server.GetInfo.by_id(main_server_id)
+                    if result:
+                        result, reason = utils.whitelist.delete_from_server(server_info[2], server_info[3], server_info[4], reason[2])
+                        if result:
+                            success_server = 1
+                            msg = "白名单删除成功！"
+                        else:
+                            await rebind_whitelist.finish("删除失败！\n" + reason)
+                    else:
+                        await rebind_whitelist.finish(Message("删除失败！\n无法连接至数据库"))
+                else:
+                    await rebind_whitelist.finish(Message("删除失败！\n未知的模式\n请在config.py中重新配置"))
+                #
+                if success_server:
+                    result, reason = utils.whitelist.rebind_db(qq, player_name)
+                    if result:
+                        await rebind_whitelist.finish(f"改绑成功，之前的白名单已被移除，请重新添加白名单\n{msg}")
+                    else:
+                        if reason == "不存在此玩家":
+                            await rebind_whitelist.finish(f"改绑失败！\n删除白名单成功但无法找到你的白名单\n可能是内部错误导致的\n{msg}")
+                        else:
+                            await rebind_whitelist.finish(f"改绑失败！\n无法连接到数据库\n{reason}\n{msg}")
+                else:
+                    await rebind_whitelist.finish(f"改绑失败！\n无法删除对应的服务器白名单\n{msg}")
             else:
                 if reason == "不存在此玩家":
                     await rebind_whitelist.finish(f"改绑失败！\n你还没有添加白名单")
