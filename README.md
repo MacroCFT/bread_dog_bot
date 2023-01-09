@@ -114,7 +114,7 @@ _✨基于 [Nonebot2](https://github.com/nonebot/nonebot2) 和 [go-cqhttp](https
 <summary>排行榜功能</summary>
 
 
-+ coming soon...
++ 可能写不了了
 </details>
 
 
@@ -123,13 +123,15 @@ _✨基于 [Nonebot2](https://github.com/nonebot/nonebot2) 和 [go-cqhttp](https
 
 必要时可以创建一个虚拟环境
 
-2.克隆本仓库
+2.配置你的服务器，为它开启REST并创建一个密钥，必要时可以安装项目`ServerPlugins`内的插件
+
+3.克隆本仓库
 
 ```shell
 git clone https://github.com/StarCloud-CY/bread_dog_bot.git
 ```
 
-3.安装对应的模块
+4.安装对应的模块
 
 ```shell
 pip install -r requirements.txt
@@ -137,11 +139,20 @@ pip install -r requirements.txt
 
 你可能需要换源并安装`Visual Build Tools`
 
-4.运行项目
+5.配置基础文件
+
+打开`.env.dev`文件，在列表中找到`SUPERUSERS`项，把你的QQ号填入双引号中，配置超管账户
+
+![image](https://user-images.githubusercontent.com/115162925/211240568-c52e4e15-4a7b-4cb1-aa53-2e46bb9a4aaf.png)
+
+
+6.运行程序
 
 ```shell
 nb run
 ```
+
+7.为你的机器人添加服务器，配置基本项目
 
 
 ## 版本要求
