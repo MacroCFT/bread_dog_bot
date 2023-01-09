@@ -156,17 +156,19 @@ async def delete_whitelist_handle(bot: Bot, event: Event):
                 msg = []
                 if result:
                     if server_info_list:
+                        success_server = 0
+                        failed_server = 0
                         for i in server_info_list:
                             conn = models.server.Connect(i[2], i[3], i[4])
                             result, reason = conn.delete_whitelist(qq)
                             if result:
-                                msg.append(f"๑{i[0]}๑{MessageSegment.face(190)}{i[1]}\n"
-                                           f"删除成功！")
+                                success_server += 1
                             else:
                                 msg.append(f"๑{i[0]}๑{MessageSegment.face(190)}{i[1]}\n"
                                            f"删除失败！\n"
                                            f"{reason}")
-                        await delete_whitelist.finish(Message("\n".join(msg)))
+                                failed_server += 1
+                        await delete_whitelist.finish(Message(f"--删除白名单--\n共{len(server_info_list)}个服务器，成功{success_server}个，失败{failed_server}个" + (("\n" + "\n".join(msg)) if msg else "")))
                     else:
                         await delete_whitelist.finish(Message("删除失败！\n没有可用的服务器！"))
                 else:
