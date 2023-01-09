@@ -1,11 +1,15 @@
+from json import dumps, loads, JSONDecodeError, dump
+from os import mkdir
+from os.path import isdir
 from sqlite3 import connect, OperationalError
-from json import dumps, loads
 from sys import stderr
 from time import strftime
 from traceback import print_exc
 
 from flask import Flask, request
 
+if not isdir("logs"):
+    mkdir('logs')
 log = open(fr'./logs/log-{strftime("%Y-%m-%d_%H-%M-%S")}.txt', 'w')
 
 
@@ -21,10 +25,47 @@ try:
         host = cfg["host"]
         port = cfg["port"]
         tokens = cfg["token"]
-except Exception as e:
+except JSONDecodeError as e:
     print_exc(file=log)
     print_exc()
-    write_log(f"配置文件导入出错！{e}")
+    write_log(f"配置文件不符合JSON语法！\n{e}")
+except ValueError as e:
+    print_exc(file=log)
+    print_exc()
+    write_log(f"配置文件异常！\n{e}")
+except FileNotFoundError as e:
+    print_exc(file=log)
+    write_log(f"配置文件不存在！尝试自动创建...\n{e}")
+    print("配置文件不存在！尝试自动创建...")
+    with open("config.json", "w") as e:
+        dump(
+            {
+                "host": "0.0.0.0",
+                "port": 5432,
+                "token": {
+                    "BDT_Default": [
+                        "list",
+                        "add",
+                        "del"
+                    ]
+                }
+            },
+            e,
+            indent=4
+        )
+        host = "0.0.0.0"
+        port = 5432
+        tokens = {
+                    "BDT_Default": [
+                        "list",
+                        "add",
+                        "del"
+                    ]
+                }
+except PermissionError as e:
+    print_exc(file=log)
+    print_exc()
+    write_log(f"无权读取配置文件！\n{e}")
 
 
 class sql:
@@ -32,6 +73,10 @@ class sql:
         self.cur = None
         self.conn = None
         self.path = path
+        s, r = self.execute_sql("SELECT name FROM sqlite_master WHERE type='table' AND name='black_list'")
+        if s and (not r):
+            print("数据库表不存在，自动创建...")
+            s, r = self.execute_sql('CREATE TABLE IF NOT EXISTS black_list (qq TEXT,name TEXT,reason TEXT)')
 
     def execute_sql(self, s: str):
         try:
@@ -49,15 +94,31 @@ class sql:
             write_log(f"数据库处理出错:{e}")
             return False, f"数据库处理时出错:{e}"
 
-    def detect(self, token):
+    def detect(self, token, qq):
         write_log(f"请求云黑用户的信息...token={token}")
         if token in tokens:
-            s, r = self.execute_sql(f"select * from black_list")
-            if s:
-                write_log(f"用户信息 {r} 请求成功...")
-                return True, r
+            if "list" in tokens[token]:
+                s, r = self.execute_sql(f"select * from black_list")
+                if s:
+                    write_log(f"用户信息 {r} 请求成功...")
+                    if qq:
+                        write_log("有QQ返回内容，分离中...")
+                        wl = []
+                        for x in r:
+                            print(x)
+                            print(qq)
+                            if x[0] in qq:
+                                wl.append(x)
+                        write_log(f"分离出的用户信息:{wl}")
+                        return True, wl
+                    else:
+                        write_log("没有QQ返回内容，自动全选...")
+                        return True, r
+                else:
+                    return False, r
             else:
-                return False, r
+                write_log(f"token:'{token}'没有查询云黑的权限")
+                return False, "token没有查询云黑的权限"
         else:
             write_log(f"token:'{token}'不在可用的tokens列表内")
             return False, "token不正确"
@@ -72,23 +133,27 @@ class sql:
 
     def add(self, token, qq, group, reason):
         write_log(f"添加云黑...token={token}, qq={qq}, group={group}, reason={reason}")
-        if token in tokens:
-            s, r = self.find(qq)
-            if s:
-                if not r:
-                    print("没有匹配的用户")
-                    write_log(f"未匹配用户{qq}，添加云黑...")
-                    s, r = self.execute_sql(f"INSERT INTO black_list VALUES('{qq}','{group}','{reason}')")
-                    if s:
-                        write_log(f"云黑用户 qq={qq}, group={group}, reason={reason} 已被添加...")
-                        return True, "数据加入成功"
+        if token in tokens.keys():
+            if "add" in tokens[token]:
+                s, r = self.find(qq)
+                if s:
+                    if not r:
+                        print("没有匹配的用户")
+                        write_log(f"未匹配用户{qq}，添加云黑...")
+                        s, r = self.execute_sql(f"INSERT INTO black_list VALUES('{qq}','{group}','{reason}')")
+                        if s:
+                            write_log(f"云黑用户 qq={qq}, group={group}, reason={reason} 已被添加...")
+                            return True, "数据加入成功"
+                        else:
+                            return False, r
                     else:
-                        return False, r
+                        print(r)
+                        return False, f"该用户已存在于云黑数据库！\nQQ:{r[0][0]}\n加入的群:{r[0][1]}\n理由:{r[0][2]}"
                 else:
-                    print(r)
-                    return False, f"该用户已存在于云黑数据库！\nQQ:{r[0][0]}\n加入的群:{r[0][1]}\n理由:{r[0][2]}"
+                    return False, r
             else:
-                return False, r
+                write_log(f"token:'{token}'没有添加云黑的权限")
+                return False, "token没有添加云黑的权限"
         else:
             write_log(f"token:'{token}'不在可用的tokens列表内")
             return False, "token不正确"
@@ -96,21 +161,25 @@ class sql:
     def delete(self, token, qq):
         write_log(f"删除云黑...token={token}, qq={qq}")
         if token in tokens:
-            print(f"接收到删除云黑请求：QQ:{qq}")
-            s, r = self.find(qq)
-            if s:
-                if r:
-                    print(f"发现云黑用户:{r}")
-                    s, r = self.execute_sql(f"delete from black_list where qq = '{qq}'")
-                    if s:
-                        write_log(f"云黑用户{qq}已从云黑中移除")
-                        return True, "数据删除成功"
+            if "del" in tokens[token]:
+                print(f"接收到删除云黑请求：QQ:{qq}")
+                s, r = self.find(qq)
+                if s:
+                    if r:
+                        print(f"发现云黑用户:{r}")
+                        s, r = self.execute_sql(f"delete from black_list where qq = '{qq}'")
+                        if s:
+                            write_log(f"云黑用户{qq}已从云黑中移除")
+                            return True, "数据删除成功"
+                        else:
+                            return False, r
                     else:
-                        return False, r
+                        return False, f"云黑数据中没有{qq}！"
                 else:
-                    return False, f"云黑数据中没有{qq}！"
+                    return False, r
             else:
-                return False, r
+                write_log(f"token:'{token}'没有删除云黑的权限")
+                return False, "token没有删除云黑的权限"
         else:
             write_log(f"token:'{token}'不在可用的tokens列表内")
             return False, "token不正确"
@@ -127,7 +196,7 @@ def blacklist():
         write_log(f"请求者IP为:{request.remote_addr}")
         write_log(f"请求获取云黑列表...")
         print("接收到云黑数据请求...")
-        s, r = bl_sql.detect(request.args.get("token"))
+        s, r = bl_sql.detect(request.args.get("token"), request.args.getlist("qq"))
         if s:
             write_log(f"获取的云黑用户元数据:{r}")
             return dumps({"data": r}), 200

@@ -27,7 +27,7 @@ def detect(qq: Union[str, int, list]):
         "token": token,
         "qq": qq
     }
-    r = requests.get(url, params=params)
+    r = requests.get(url, params=params, timeout=1)
     blacklist = []
     if r.status_code == 200:
         for i in r.json()["data"]:
@@ -62,7 +62,7 @@ def add(qq: str, group_id: str, reason: str):
         "groupID": group_id,
         "reason": reason
     }
-    r = requests.get(url, params=params)
+    r = requests.get(url, params=params, timeout=1)
     if r.status_code == 200:
         return [True, "成功加入云黑"]
     elif r.status_code == 403:
@@ -87,7 +87,7 @@ def delete(qq: str):
         "token": token,
         "QQ": qq
     }
-    r = requests.get(url, params=params)
+    r = requests.get(url, params=params, timeout=1)
     if r.status_code == 200:
         return [True, "成功移除云黑"]
     elif r.status_code == 403:
@@ -111,7 +111,7 @@ def query(qq: str):
     params = {
         "token": token,
     }
-    r = requests.get(url, params=params)
+    r = requests.get(url, params=params, timeout=1)
     if r.status_code == 200:
         for i in r.json()["data"]:
             if i[0] == qq:
