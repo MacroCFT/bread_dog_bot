@@ -39,7 +39,7 @@ async def add_whitelist_handle(bot: Bot, event: Event):
                                        f"{reason}")
                             failed_server += 1
                     error_msg = "\n".join(msg)
-                    await add_whitelist.finish(Message(f"--添加白名单--\n共{max_servers}个服务器，成功{success_server}个，失败{failed_server}个" + (f"{error_msg}" if error_msg else "")))
+                    await add_whitelist.finish(Message(f"--添加白名单--\n共{max_servers}个服务器，成功{success_server}个，失败{failed_server}个" + (f"\n{error_msg}" if error_msg else "")))
                 else:
                     await add_whitelist.finish(Message("添加失败！\n没有添加服务器！"))
             else:
@@ -98,7 +98,7 @@ async def rebind_whitelist_handle(bot: Bot, event: Event):
                                                f"{reason}")
                                     failed_server += 1
                             error_msg = "\n".join(error_msg)
-                            msg = f"共{max_servers}个服务器，成功{success_server}个，失败{failed_server}个" + (f"{error_msg}" if error_msg else "")
+                            msg = f"共{max_servers}个服务器，成功{success_server}个，失败{failed_server}个" + (f"\n{error_msg}" if error_msg else "")
                         else:
                             await rebind_whitelist.finish(Message("删除失败！\n没有可用的服务器！"))
                     else:
