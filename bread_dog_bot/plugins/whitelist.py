@@ -74,7 +74,7 @@ async def rebind_whitelist_handle(bot: Bot, event: Event):
         text = event.get_plaintext().split(" ")
         if len(text) == 3:
             player_name = text[2]
-            qq = text[1]
+            qq = text[1].split(":")[-1]
             result, reason = utils.whitelist.GetInfo.by_qq(qq)
             if result:
                 if not player_name.isalnum():
@@ -94,7 +94,7 @@ async def rebind_whitelist_handle(bot: Bot, event: Event):
                                 if result:
                                     success_server += 1
                                 else:
-                                    msg.append(f"๑{i[0]}๑{MessageSegment.face(190)}{i[1]}\n"
+                                    error_msg.append(f"๑{i[0]}๑{MessageSegment.face(190)}{i[1]}\n"
                                                f"{reason}")
                                     failed_server += 1
                             error_msg = "\n".join(error_msg)
