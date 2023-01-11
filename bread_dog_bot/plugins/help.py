@@ -75,7 +75,7 @@ async def help_handle(bot: Bot, event: Event):
         elif command == "改绑白名单":
             await help.finish("——改绑白名单——\n"
                               "权限：\n"
-                              "无\n"
+                              "管理员\n"
                               "介绍：\n"
                               "改绑白数据库中的白名单，自动删除原白名单，你需要使用 添加白名单 重新添加白名单\n"
                               "用法：\n"
