@@ -46,6 +46,10 @@ _✨基于 [Nonebot2](https://github.com/nonebot/nonebot2) 和 [go-cqhttp](https
 
 + 添加白名单
 + 删除白名单
++ 改绑白名单
++ 自删白名单
++ 查询白名单
++ 查询服白名单
 + 重置白名单列表
 </details>
 
@@ -110,12 +114,51 @@ _✨基于 [Nonebot2](https://github.com/nonebot/nonebot2) 和 [go-cqhttp](https
 <summary>排行榜功能</summary>
 
 
-+ coming soon...
++ 可能写不了了
 </details>
 
 
-## 支持
-强烈推荐使用 Terraria v1.4.4.5（最新版）
+## 使用方式简览
+1.安装一个适合你电脑的[Python](https://www.python.org)，建议使用3.10
+
+必要时可以创建一个虚拟环境
+
+2.配置你的服务器，为它开启REST并创建一个密钥，必要时可以安装项目`ServerPlugins`内的插件
+
+3.克隆本仓库
+
+```shell
+git clone https://github.com/StarCloud-CY/bread_dog_bot.git
+```
+
+4.安装对应的模块
+
+```shell
+pip install -r requirements.txt
+```
+
+你可能需要换源并安装`Visual Build Tools`
+
+5.配置基础文件
+
+打开`.env.dev`文件，在列表中找到`SUPERUSERS`项，把你的QQ号填入双引号中，配置超管账户
+
+![image](https://user-images.githubusercontent.com/115162925/211240568-c52e4e15-4a7b-4cb1-aa53-2e46bb9a4aaf.png)
+
+
+6.运行程序
+
+```shell
+nb run
+```
+
+7.为你的机器人添加服务器，配置基本项目
+
+
+## 版本要求
+强烈推荐使用 Terraria v1.4.4+ (TShock5+)
+
+云黑服务器可使用~~星云写的云黑服务器或~~[千亦的云黑服务器](https://github.com/Qianyiovo/bread_dog_blacklist_system)
 
 
 ## 前置插件
@@ -164,13 +207,11 @@ _✨基于 [Nonebot2](https://github.com/nonebot/nonebot2) 和 [go-cqhttp](https
 + 问心 50.00 CNY
 
 </details>
+还有原作者: `Qianyiovo`
 
 ## 贡献
 
 如果你喜欢本项目，可以请[原作者喝杯可乐](https://afdian.net/@qianyiovo)，我会继续努力的！
-
-## 补充
-此fork现在由`StarCloud-cy`更新，欢迎前往[原作](https://github.com/Qianyiovo/bread_dog_bot)
 
 
 ## 许可
