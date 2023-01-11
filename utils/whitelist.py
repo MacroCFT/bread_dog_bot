@@ -20,6 +20,52 @@ class GetInfo:
             return False, sql_return_result
 
     @staticmethod
+    def auto_type(type: str):
+        """
+        自动分析数据类型
+        :param type:输入的数据类型
+        :return:获取结果 成功返回[True, 白名单玩家信息] 失败返回[False, 失败原因]
+        """
+        t = "None"
+        type_split = type.split(":", 1)
+        if len(type_split) == 2:
+            t_type = type_split[0]
+            if t_type == "id":
+                try:
+                    print(f"类型：id,数值：{int(type_split[1])}")
+                    return GetInfo.by_id(int(type_split[1]))
+                except ValueError:
+                    return False, "标头与实际类型不符"
+            elif t_type == "qq":
+                try:
+                    int(type_split[1])
+                    print(f"类型：qq,数值：{type_split[1]}")
+                    return GetInfo.by_qq(type_split[1])
+                except ValueError:
+                    return False, "标头与实际类型不符"
+            elif t_type == "name":
+                print(f"类型：name,数值：{type_split[1]}")
+                return GetInfo.by_name(type_split[1])
+            else:
+                return False, "未知的标头"
+        else:
+            try:
+                t_int = int(type)
+                if str(t_int) == type:
+                    if t_int >= 100000:
+                        print(f"类型：qq,数值：{type}")
+                        return GetInfo.by_qq(type)
+                    else:
+                        print(f"类型：id,数值：{t_int}")
+                        return GetInfo.by_id(t_int)
+                else:
+                    print(f"类型：name,数值：{type}")
+                    return GetInfo.by_name(type)
+            except ValueError:
+                print(f"类型：name,数值：{type}")
+                return GetInfo.by_name(type)
+
+    @staticmethod
     def by_id(id: int):
         """
         以ID获取白名单玩家信息
