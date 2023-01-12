@@ -74,7 +74,7 @@ async def rebind_whitelist_handle(bot: Bot, event: Event):
         text = event.get_plaintext().split(" ")
         if len(text) == 3:
             player_name = text[2]
-            qq = text[1].split(":")[-1]
+            qq = text[1]
             result, reason = utils.whitelist.GetInfo.by_qq(qq)
             if result:
                 if not player_name.isalnum():
@@ -194,49 +194,6 @@ async def delete_whitelist_handle(bot: Bot, event: Event):
     else:
         await delete_whitelist.finish("删除失败！\n权限不足！\n请输入【帮助 删除白名单】获取该功能更多信息")
 
-
-self_delete = on_command("自删白名单")
-
-
-@self_delete.handle()
-async def self_delete_handle(bot: Bot, event: Event):
-    logger.info(f"「{event.get_user_id()}」执行了 「自删白名单」")
-    if config.Whitelist.method == "normal":  # 普通模式
-        qq = event.get_user_id()
-        result, server_info_list = utils.server.GetInfo.all()
-        msg = []
-        if result:
-            if server_info_list:
-                for i in server_info_list:
-                    conn = models.server.Connect(i[2], i[3], i[4])
-                    result, reason = conn.delete_whitelist(qq)
-                    if result:
-                        msg.append(f"๑{i[0]}๑{MessageSegment.face(190)}{i[1]}\n"
-                                   f"删除成功！")
-                    else:
-                        msg.append(f"๑{i[0]}๑{MessageSegment.face(190)}{i[1]}\n"
-                                   f"删除失败！\n"
-                                   f"{reason}")
-                await self_delete.finish(Message("\n".join(msg)))
-            else:
-                await self_delete.finish(Message("删除失败！\n没有可用的服务器！"))
-        else:
-            await self_delete.finish(Message("删除失败！\n无法连接至数据库"))
-    elif config.Whitelist.method == "cluster":  # 集群模式
-        main_server_id = config.Whitelist.main_server
-        qq = event.get_user_id()
-        result, server_info = utils.server.GetInfo.by_id(main_server_id)
-        if result:
-            conn = models.server.Connect(server_info[2], server_info[3], server_info[4])
-            result, reason = conn.delete_whitelist(qq)
-            if result:
-                await delete_whitelist.finish("删除成功！")
-            else:
-                await delete_whitelist.finish("删除失败！\n" + reason)
-        else:
-            await self_delete.finish(Message("删除失败！\n无法连接至数据库"))
-    else:
-        await self_delete.finish(Message("删除失败！\n未知的模式\n请在config.py中重新配置"))
 
 
 query_server = on_command("查询服白名单")

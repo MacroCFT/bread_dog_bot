@@ -63,15 +63,6 @@ async def help_handle(bot: Bot, event: Event):
                               "删除白名单 [QQ]\n"
                               "参数：\n"
                               "QQ - 玩家绑定的QQ")
-        elif command == "自删白名单":
-            await help.finish("——自删白名单——\n"
-                              "权限：\n"
-                              "无\n"
-                              "介绍：\n"
-                              "向所有服务器以及数据库删除自己的白名单\n"
-                              "用法：\n"
-                              "自删白名单\n"
-                              "参数：无\n")
         elif command == "改绑白名单":
             await help.finish("——改绑白名单——\n"
                               "权限：\n"
