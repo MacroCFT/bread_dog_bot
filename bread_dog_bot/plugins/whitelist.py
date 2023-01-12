@@ -25,7 +25,7 @@ async def add_whitelist_handle(bot: Bot, event: Event):
                 if server_info_list:
                     result, player_info = utils.whitelist.GetInfo.by_qq(event.get_user_id())
                     if result:
-                        msg.append("警告：你正在重新添加白名单，将使用数据库的玩家名添加白名单，如需更改，请使用「改绑白名单」")
+                        msg.append(f'警告：你正在重新添加白名单，将使用"{player_info[2]}"添加白名单')
                     max_servers = len(server_info_list)
                     success_server = 0
                     failed_server = 0
@@ -39,7 +39,7 @@ async def add_whitelist_handle(bot: Bot, event: Event):
                                        f"{reason}")
                             failed_server += 1
                     error_msg = "\n".join(msg)
-                    await add_whitelist.finish(Message(f"--添加白名单--\n共{max_servers}个服务器，成功{success_server}个，失败{failed_server}个" + (f"\n{error_msg}" if error_msg else "")))
+                    await add_whitelist.finish(Message(f"--添加白名单--\n共{max_servers}个服务器，成功{success_server}个，失败{failed_server}个\n{error_msg}"))
                 else:
                     await add_whitelist.finish(Message("添加失败！\n没有添加服务器！"))
             else:
@@ -98,7 +98,7 @@ async def rebind_whitelist_handle(bot: Bot, event: Event):
                                                f"{reason}")
                                     failed_server += 1
                             error_msg = "\n".join(error_msg)
-                            msg = f"共{max_servers}个服务器，成功{success_server}个，失败{failed_server}个" + (f"\n{error_msg}" if error_msg else "")
+                            msg = f"共{max_servers}个服务器，成功{success_server}个，失败{failed_server}个\n{error_msg}"
                         else:
                             await rebind_whitelist.finish(Message("删除失败！\n没有可用的服务器！"))
                     else:
