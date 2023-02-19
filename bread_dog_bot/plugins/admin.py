@@ -7,14 +7,17 @@ from PIL import Image, ImageDraw, ImageFont
 from nonebot import on_command
 from nonebot.adapters.onebot.v11 import Bot, Event, MessageSegment, GroupMessageEvent, Message
 from nonebot.permission import SUPERUSER
+from importlib import reload
 
+import config
 import utils.admin
+import utils.msg_whitelist
 
 add_admin = on_command("添加管理员", permission=SUPERUSER)
 
 
 @add_admin.handle()
-async def add_admin_handle(bot: Bot, event: Event):
+async def add_admin_handle(event: Event):
     logger.info(f"「{event.get_user_id()}」执行了 「添加管理员」")
     text = event.get_plaintext().split(" ")
     if len(text) == 2:
@@ -35,7 +38,7 @@ delete_admin = on_command("删除管理员", permission=SUPERUSER)
 
 
 @delete_admin.handle()
-async def delete_admin_handle(bot: Bot, event: Event):
+async def delete_admin_handle(event: Event):
     logger.info(f"「{event.get_user_id()}」执行了 「删除管理员」")
     text = event.get_plaintext().split(" ")
     if len(text) == 2:
@@ -59,6 +62,7 @@ admin_list = on_command("管理员列表")
 async def admin_list_handle(bot: Bot, event: GroupMessageEvent):
     logger.info(f"「{event.get_user_id()}」执行了 「管理员列表」")
     text = event.get_plaintext().split(" ")
+    page = 1
     if len(text) == 1:
         page = 1
     elif len(text) == 2:
@@ -136,3 +140,15 @@ async def admin_list_handle(bot: Bot, event: GroupMessageEvent):
         await admin_list.finish(MessageSegment.image("file:///" + os.getcwd() + "\\img\\admin_list.png"))
     else:  # linux
         await admin_list.finish(Message(MessageSegment.image("file://" + os.getcwd() + "/img/admin_list.png")))
+
+
+hot_reload = on_command("重载配置", permission=SUPERUSER)
+
+
+@hot_reload.handle()
+async def hot_reload_handle():
+    try:
+        reload(config)
+        await hot_reload.finish("热重载配置完成！")
+    except Exception as e:
+        await hot_reload.finish(f"热重载配置出错！\n{e}")

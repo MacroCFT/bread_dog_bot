@@ -5,6 +5,7 @@ import models.server
 import models.server
 import utils.admin
 import utils.server
+import utils.msg_whitelist
 
 remote_command = on_command("执行")
 

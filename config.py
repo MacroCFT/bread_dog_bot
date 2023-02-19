@@ -1,7 +1,7 @@
 class Group:
     # QQ群昵称 用于群员加入与退出
-    id = "489192282"
-    name = "Terraria Journey"
+    gid = "123456"
+    name = "群聊"
 
 
 class Currency:
