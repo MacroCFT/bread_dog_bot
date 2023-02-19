@@ -47,7 +47,6 @@ _✨基于 [Nonebot2](https://github.com/nonebot/nonebot2) 和 [go-cqhttp](https
 + 添加白名单
 + 删除白名单
 + 改绑白名单
-+ 自删白名单
 + 查询白名单
 + 查询服白名单
 + 重置白名单列表
