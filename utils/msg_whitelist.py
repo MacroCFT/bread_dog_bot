@@ -32,25 +32,25 @@ def in_whitelist(event: Union[Event, PrivateMessageEvent, GroupMessageEvent, Gro
     private, group = get_whitelist_list()
     if isinstance(event, PrivateMessageEvent):
         logger.info("接收到私聊消息")
-        if event.get_user_id() in private:
+        if event.get_user_id() in private or (not private):
             return True
         else:
             return False
     elif isinstance(event, GroupMessageEvent):
         logger.info("接受到群聊消息")
-        if event.group_id in group:
+        if event.group_id in group or (not private):
             return True
         else:
             return False
     elif isinstance(event, GroupIncreaseNoticeEvent):
         logger.info("接受到入群消息")
-        if event.group_id in group:
+        if event.group_id in group or (not private):
             return True
         else:
             return False
     elif isinstance(event, GroupDecreaseNoticeEvent):
         logger.info("接受到离群消息")
-        if event.group_id in group:
+        if event.group_id in group or (not private):
             return True
         else:
             return False

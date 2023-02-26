@@ -57,3 +57,7 @@ wcwidth==0.2.5
 websockets==10.3
 win32-setctime==1.1.0
 yarl==1.8.1
+
+playwright~=1.31.0
+config~=0.5.1
+Flask~=2.2.2
