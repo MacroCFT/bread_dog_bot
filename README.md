@@ -140,7 +140,7 @@ pip install -r requirements.txt
 
 5.配置基础文件
 
-打开`.env.dev`文件，在列表中找到`SUPERUSERS`项，把你的QQ号填入双引号中，配置超管账户
+打开`.env.dev`文件，在列表中找到`SUPERUSERS`项，把你的QQ号填入双引号中，配置超管账户，现在你还需要配置`WHITELIST`项
 
 ![image](https://user-images.githubusercontent.com/115162925/211240568-c52e4e15-4a7b-4cb1-aa53-2e46bb9a4aaf.png)
 
