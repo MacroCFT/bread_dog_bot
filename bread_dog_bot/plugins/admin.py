@@ -74,7 +74,7 @@ async def admin_list_handle(bot: Bot, event: GroupMessageEvent):
         await admin_list.finish("查询失败！\n用法错误！\n请输入【帮助 管理员列表】获取该功能更多信息")
 
     admins = utils.admin.get()
-    if admins[0] == "" or not admins:
+    if (len(admins) == 1 and admins[0] == "") or not admins:
         await admin_list.finish("群主很懒，还没有添加任何管理员")
     admin_info_list = []
     group_info = await bot.get_group_info(group_id=event.group_id)
